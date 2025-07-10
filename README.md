@@ -28,13 +28,15 @@
 
 ---
 
-## 빌드 및 실행 방법
+# 빌드 및 실행 방법
 
-# 개발 서버 실행
+## 개발 서버 실행
 npm run dev
 
-## 배포한 정적 사이트 URL
+---
 
-# VERCEL을 사용해 배포
+# 배포한 정적 사이트 URL
+
+## VERCEL을 사용해 배포
  https://artinus-kwakseryoung.vercel.app
 
