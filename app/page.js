@@ -5,6 +5,7 @@ import axios from 'axios';
 import styles from "./page.module.css";
 import { ClipLoader } from 'react-spinners';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function ProductList() {
   const [products, setProducts] = useState([]);
@@ -125,6 +126,7 @@ export default function ProductList() {
       </div>
       <div className={styles.grid}>
         {sortedProducts.map((item) => (
+          <Link href={`/products/${item.id}`}>
           <div key={item.id} className={styles.card}>
             <Image
               src={item.thumbnail}
@@ -151,6 +153,7 @@ export default function ProductList() {
               </div>
             </div>
           </div>
+          </Link>
         ))}
       </div>
     </div>
