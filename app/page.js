@@ -1,95 +1,158 @@
-import Image from "next/image";
+"use client"
+
+import { useEffect, useState } from 'react';
+import axios from 'axios';
 import styles from "./page.module.css";
+import { ClipLoader } from 'react-spinners';
+import Image from 'next/image';
 
-export default function Home() {
+export default function ProductList() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("전체 보기");
+  const categories = ["전체 보기", ...new Set(products.map((p) => p.category))];
+  const filteredProducts = selectedCategory === "전체 보기"
+    ? products
+    : products.filter((p) => p.category === selectedCategory);
+  const [sortOption, setSortOption] = useState("no-sort");
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortOption) {
+      case "price-asc":
+        return a.price - b.price;
+      case "price-desc":
+        return b.price - a.price;
+      case "rating-asc":
+        return a.rating - b.rating;
+      case "rating-desc":
+        return b.rating - a.rating;
+      case "no-sort":
+        return b.rating - a.rating;
+      default:
+        return 0;
+    }
+  });
+  
+  const renderStars = (rating) => {
+    const fullStars = Math.floor(rating);
+    const halfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
+
+    return (
+      <>
+        {'★'.repeat(fullStars)}
+        {halfStar && '⯪'}
+        {'☆'.repeat(emptyStars)}
+      </>
+    );
+  };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true)
+      try {
+        const res = await axios.get('https://dummyjson.com/products?skip=0&limit=20');
+        setProducts(res.data.products);
+      } catch (err) {
+        console.error('데이터 가져오기 실패', err);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <div className={styles.loading}>
+      <ClipLoader color="skyblue" size={50} />
+    </div>
+  };
+
+  if (error) return <div>에러가 발생하였습니다.</div>;
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>app/page.js</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className={styles.root}>
+      <h1>상품 목록</h1>
+      <div className={styles.optioncontainer}>
+        <div className={styles.filter}>
+          <div>카테고리:</div>
+          <select
+            id="category"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
         </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div className={styles.sortBar}>
+          <div
+            className={sortOption === "no-sort" ? styles.active : ""}
+            onClick={() => setSortOption("no-sort")}
+          >
+            기본 정렬
+          </div>
+          <div
+            className={sortOption === "price-asc" ? styles.active : ""}
+            onClick={() => setSortOption("price-asc")}
+          >
+            가격 낮은 순
+          </div>
+          <div
+            className={sortOption === "price-desc" ? styles.active : ""}
+            onClick={() => setSortOption("price-desc")}
+          >
+            가격 높은 순
+          </div>
+          <div
+            className={sortOption === "rating-desc" ? styles.active : ""}
+            onClick={() => setSortOption("rating-desc")}
+          >
+            별점 높은 순
+          </div>
+          <div
+            className={sortOption === "rating-asc" ? styles.active : ""}
+            onClick={() => setSortOption("rating-asc")}
+          >
+            별점 낮은 순
+          </div>
+        </div>
+      </div>
+      <div className={styles.grid}>
+        {sortedProducts.map((item) => (
+          <div key={item.id} className={styles.card}>
+            <Image
+              src={item.thumbnail}
+              width={200}
+              height={200}
+              alt={`${item.title} thumbnail image`}
+              className={styles.thumbnail}
+            />
+            <div className={styles.title}>
+              [{item.brand ? item.brand : "NO BRAND"}] {item.title}
+            </div>
+            <div className={styles.price}>
+              <span className={styles.originalPrice}>
+                ${(item.price / (1 - item.discountPercentage / 100)).toFixed(2)}
+              </span>
+              <span className={styles.currentPrice}> ${item.price}</span>
+            </div>
+            <div className={styles.ratingcontainer}>
+              <div className={styles.rating}>
+                {renderStars(item.rating)}
+              </div>
+              <div className={styles.ratingpoint}>
+                ({item.rating})
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
