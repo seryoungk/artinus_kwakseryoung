@@ -71,7 +71,9 @@ export default function ProductList() {
     </div>
   };
 
-  if (error) return <div>에러가 발생하였습니다.</div>;
+  if (error) return <div className={styles.loading}>
+    <Image src={'/404error.png'} width={600} height={600} alt='error' style={{width:"100%", maxWidth:"600px", height:"auto", maxHeight:"600px"}}/>
+  </div>;
 
   return (
     <div className={styles.root}>
@@ -126,8 +128,8 @@ export default function ProductList() {
       </div>
       <div className={styles.grid}>
         {sortedProducts.map((item) => (
-          <Link href={`/products/${item.id}`}>
-          <div key={item.id} className={styles.card}>
+          <Link href={`/products/${item.id}`} key={item.id} className={styles.link}>
+          <div className={styles.card}>
             <Image
               src={item.thumbnail}
               width={200}
